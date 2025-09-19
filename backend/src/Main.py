@@ -1,22 +1,30 @@
-import os
+import os, spotipy, APICounter
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
-import spotipy
 from dotenv import load_dotenv
 from PullGenres import getTrackGenres
+from ParseUserPlaylist import getUserTracks
+
+userPlaylist = "6ldPqoCFrK5X75Bwp1B2uS"
+
+# some artists dont have genres
+# What I want to do - create folder 
+#   in that folder have a playlist for each category (maybe max 3)
+#   and a playlist for those without genres
 
 def main():
     load_dotenv()
 
     sp = getSp(False)
 
-    trackIDs = ['https://open.spotify.com/track/6wdIe1ep26qiaIaiHF5b9F', 
-                'https://open.spotify.com/track/5v6wvFBcvedd6olUk3r9J8',
-                'https://open.spotify.com/track/22bX2FwXSvG49G0bPWm5nc'
-                ]
+    global userPlaylist
+    trackIDs = getUserTracks(userPlaylist, sp)
     
     trackGenres = getTrackGenres(trackIDs, sp)
 
-    print(trackGenres)
+    print(f"Spotify API Calls: {APICounter.numApiCalls}")
+    
+    for key, value in trackGenres.items():
+        print(f"track: {key}, genres: {value}")
 
 
 def getSp(elevatedAuth):

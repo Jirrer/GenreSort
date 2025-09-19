@@ -1,4 +1,4 @@
-import time
+import time, APICounter
 from itertools import islice
 from spotipy.exceptions import SpotifyException
 
@@ -19,7 +19,7 @@ def getTrackGenres(trackstrs, sp):
 
         genres = set()
         for artist in track["artists"]:
-            genres.update(cache.get(artist["id"], []))
+            genres.update(cache.get(artist["id"], ["unknown"]))
 
         output[track["id"]] = ",".join(genres)
 
@@ -29,6 +29,7 @@ def getTrackIDs(strs, sp):
     output = []
     for batch in chunks(strs, 50):
         info = sp.tracks(batch)["tracks"]
+        APICounter.numApiCalls += 1
         output.extend(info)
 
     return output
@@ -49,6 +50,7 @@ def chunks(lst, n):
 def safe_artists_fetch(sp, artist_ids):
     while True:
         try:
+            APICounter.numApiCalls += 1
             return sp.artists(artist_ids)["artists"]
         
         except SpotifyException as e:
