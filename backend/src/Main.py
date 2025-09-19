@@ -2,15 +2,16 @@ import os
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 import spotipy
 from dotenv import load_dotenv
+from PullGenres import getTrackGenres
 
 def main():
     load_dotenv()
 
     sp = getSp(False)
 
-    trackIDs = [sp.track('https://open.spotify.com/track/6wdIe1ep26qiaIaiHF5b9F'), 
-                sp.track('https://open.spotify.com/track/5v6wvFBcvedd6olUk3r9J8'),
-                sp.track('https://open.spotify.com/track/22bX2FwXSvG49G0bPWm5nc')
+    trackIDs = ['https://open.spotify.com/track/6wdIe1ep26qiaIaiHF5b9F', 
+                'https://open.spotify.com/track/5v6wvFBcvedd6olUk3r9J8',
+                'https://open.spotify.com/track/22bX2FwXSvG49G0bPWm5nc'
                 ]
     
     trackGenres = getTrackGenres(trackIDs, sp)
@@ -23,7 +24,7 @@ def getSp(elevatedAuth):
     CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
     if (elevatedAuth):
-        REDIRECT_URI = "http://localhost:8888/callback"  # Must match Spotify dashboard
+        REDIRECT_URI = "http://localhost:8888/callback" 
         SCOPE = "playlist-modify-public playlist-modify-private"
 
         sp_oauth = SpotifyOAuth(
@@ -52,22 +53,6 @@ def getSp(elevatedAuth):
         )
 
         return spotipy.Spotify(auth_manager=auth_manager)
-    
-def getTrackGenres(trackIDS, sp):
-    output = {}
-
-    for track in trackIDS:
-        songArtists = [artist['id'] for artist in track["artists"]]
-
-        artists = sp.artists(songArtists)["artists"]
-
-        genres = set()
-        for artist in artists: 
-            for genre in artist["genres"]: genres.add(genre) 
-
-        output[track['id']] = ",".join(genres) 
-
-    return output
 
 if __name__ == "__main__":
     main()
