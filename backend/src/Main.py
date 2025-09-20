@@ -1,28 +1,61 @@
 import os, spotipy, APICounter
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
+from spotipy.exceptions import SpotifyException
 from dotenv import load_dotenv
 from PullGenres import getTrackGenres
 from ParseUserPlaylist import getUserTracks
 from CreatePlaylists import createPlaylists
+from flask import Flask, request, jsonify
 
-userPlaylist = "16VvnG7Zv0HPykw4mom76K"
+# To-Do: refactor all python code
+# To-Do: work on algo to decide playlists
+# To-Do: could make it so it adds to prexisting playlists 
+
+load_dotenv()
+
 numberOfPlaylist = 3 # Plus one for misc
+elavatedSpotifyAuth = True
 
-# some artists dont have genres
-# What I want to do - create folder 
-#   in that folder have a playlist for each category (maybe max 3)
-#   and a playlist for those without genres
+app = Flask(__name__)
 
-def main():
-    load_dotenv()
+@app.route("/passInPlaylist", methods=["POST"])
+def recievePlaylist():
+    data = request.json
+    playlistID = data.get("message", "")
+    print(playlistID)
 
-    sp = getSp(True)
+    if validPlaylistId(playlistID): runPlaylistCreation(playlistID); return jsonify({"status": "success"})
+    else: return jsonify({"status": "Invalid Playlist ID"})
 
-    global userPlaylist
+def validPlaylistId(data):
+    CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+    CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+    auth_manager = SpotifyClientCredentials(
+            client_id=CLIENT_ID,
+            client_secret=CLIENT_SECRET
+        )
+
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+
+    try:
+        playlist = sp.playlist(data)
+        return True
+    
+    except SpotifyException as e:
+        print(f"Spotify API error: {e}")
+        return False
+
+def runPlaylistCreation(userPlaylist):
+    global elavatedSpotifyAuth
+    sp = getSp(elavatedSpotifyAuth)
+
     trackIDs = getUserTracks(userPlaylist, sp); print("Pulled Track Ids")
     trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
     newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
     createPlaylists(newPlaylists, sp); print("Created Playlists")
+
+    print(f"Spotify API Calls: {APICounter.numApiCalls}")
     
 def getSp(elevatedAuth):
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
@@ -92,5 +125,4 @@ def getGenresCounts(genreStr):
     return output
 
 if __name__ == "__main__": 
-    main()
-    print(f"Spotify API Calls: {APICounter.numApiCalls}")
+    app.run(debug=True)
