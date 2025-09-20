@@ -18,10 +18,11 @@ def main():
     sp = getSp(False)
 
     global userPlaylist
-    trackIDs = getUserTracks(userPlaylist, sp)
-    trackGenres = getTrackGenres(trackIDs, sp)
-    newPlaylist = generateNewPlaylist(trackGenres)
-
+    trackIDs = getUserTracks(userPlaylist, sp); print("Pulled Track Ids")
+    trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
+    newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
+    createPlaylists(newPlaylists); print("Created Playlists")
+    
 def getSp(elevatedAuth):
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -57,7 +58,7 @@ def getSp(elevatedAuth):
 
         return spotipy.Spotify(auth_manager=auth_manager)
     
-def generateNewPlaylist(trackDict):
+def generateNewPlaylists(trackDict):
     output = {'misc': []}
     genresCounts = getGenresCounts(trackDict.values())
     sortedGenreCount = sorted(genresCounts.items(), key=lambda item: item[1], reverse=True)
@@ -88,6 +89,9 @@ def getGenresCounts(genreStr):
             else: output[genre] = 1
 
     return output
+
+def createPlaylists(playlists):
+    pass
 
 if __name__ == "__main__": 
     main()
