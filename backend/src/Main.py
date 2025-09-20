@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from dotenv import load_dotenv
 from PullGenres import getTrackGenres
 from ParseUserPlaylist import getUserTracks
+from CreatePlaylists import createPlaylists
 
 userPlaylist = "16VvnG7Zv0HPykw4mom76K"
 numberOfPlaylist = 3 # Plus one for misc
@@ -15,13 +16,13 @@ numberOfPlaylist = 3 # Plus one for misc
 def main():
     load_dotenv()
 
-    sp = getSp(False)
+    sp = getSp(True)
 
     global userPlaylist
     trackIDs = getUserTracks(userPlaylist, sp); print("Pulled Track Ids")
     trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
     newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
-    createPlaylists(newPlaylists); print("Created Playlists")
+    createPlaylists(newPlaylists, sp); print("Created Playlists")
     
 def getSp(elevatedAuth):
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
@@ -89,9 +90,6 @@ def getGenresCounts(genreStr):
             else: output[genre] = 1
 
     return output
-
-def createPlaylists(playlists):
-    pass
 
 if __name__ == "__main__": 
     main()
