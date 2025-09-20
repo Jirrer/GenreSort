@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from PullGenres import getTrackGenres
 from ParseUserPlaylist import getUserTracks
 
-userPlaylist = "6ldPqoCFrK5X75Bwp1B2uS"
+userPlaylist = "16VvnG7Zv0HPykw4mom76K"
+numberOfPlaylist = 3 # Plus one for misc
 
 # some artists dont have genres
 # What I want to do - create folder 
@@ -18,14 +19,8 @@ def main():
 
     global userPlaylist
     trackIDs = getUserTracks(userPlaylist, sp)
-    
     trackGenres = getTrackGenres(trackIDs, sp)
-
-    print(f"Spotify API Calls: {APICounter.numApiCalls}")
-    
-    for key, value in trackGenres.items():
-        print(f"track: {key}, genres: {value}")
-
+    newPlaylist = generateNewPlaylist(trackGenres)
 
 def getSp(elevatedAuth):
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
@@ -61,6 +56,39 @@ def getSp(elevatedAuth):
         )
 
         return spotipy.Spotify(auth_manager=auth_manager)
+    
+def generateNewPlaylist(trackDict):
+    output = {'misc': []}
+    genresCounts = getGenresCounts(trackDict.values())
+    sortedGenreCount = sorted(genresCounts.items(), key=lambda item: item[1], reverse=True)
 
-if __name__ == "__main__":
+    global numberOfPlaylist
+    allowedGenres = sortedGenreCount[:numberOfPlaylist]
+
+    for genre in allowedGenres: output[genre[0]] = []
+
+    for track, genresStr in trackDict.items():
+        if not genresStr: output['misc'].append(track); continue
+
+        songGenres = genresStr.split(',')
+
+        for genreName in reversed(allowedGenres):
+            if genreName[0] in songGenres: output[genreName[0]].append(track); break
+
+    return output
+
+def getGenresCounts(genreStr):
+    output = {}
+
+    for genreList in genreStr:
+        for genre in genreList.split(','):
+            if not genre: continue
+
+            if genre in output: output[genre] += 1
+            else: output[genre] = 1
+
+    return output
+
+if __name__ == "__main__": 
     main()
+    print(f"Spotify API Calls: {APICounter.numApiCalls}")
