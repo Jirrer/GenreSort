@@ -1,0 +1,19 @@
+.topBar{
+    background-color: red;
+    height: 10vh;
+    display: flex;
+}
+
+.topBar button {
+    cursor: pointer;
+    flex: 1;
+}
+
+.screenContent {
+    background-color: blue;
+    min-height: 90vh;
+}
+
+.screenContent button {
+    cursor: pointer;
+}

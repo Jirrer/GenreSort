@@ -1,36 +1,26 @@
 import React, { useState } from "react";
+import './App.css';
+import NewPlaylists from "./components/newPlaylists";
+import Temp from "./components/Temp";
 
-function SendString() {
-  const [input, setInput] = useState("");
-  const [response, setResponse] = useState("");
-
-  const sendString = async () => {
-    try {
-      const res = await fetch("/passInPlaylist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input })  // send the string
-      });
-      const data = await res.json();
-      // backend returns { status: "..." }
-      setResponse(data.status || JSON.stringify(data)); // show response from backend
-    } catch (err) {
-      console.error(err);
-    }
-  };
+function App() {
+  const [active, setActive] = useState('');
 
   return (
-    <div>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type something..."
-      />
-      <button onClick={sendString}>Send</button>
-      {response && <p>Response: {response}</p>}
-    </div>
+    <>
+      <div className="topBar">
+        <button onClick={() => setActive('NewPlaylists')}>New Playlists</button>
+        <button onClick={() => setActive('Temp')}>Temp</button>
+        <button onClick={() => setActive('Temp')}>Temp</button>
+        <button onClick={() => setActive('Temp')}>Temp</button>
+
+      </div>
+      <div className="screenContent">
+        {active === 'NewPlaylists' && <NewPlaylists/>}
+        {active === 'Temp' && <Temp/>}
+      </div>
+    </>
   );
 }
 
-export default SendString;
+export default App;
