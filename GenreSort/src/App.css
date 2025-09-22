@@ -1,5 +1,5 @@
 .topBar{
-    background-color: red;
+    background-color: transparent;
     height: 10vh;
     display: flex;
 }
@@ -12,8 +12,26 @@
 .screenContent {
     background-color: blue;
     min-height: 90vh;
+    position: relative;
+    overflow: hidden;
 }
 
 .screenContent button {
     cursor: pointer;
+}
+
+.newPlaylists {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+}
+
+.PlaylistInputBox {
+
+}
+
+.PlaylistInputButton {
+    
 }

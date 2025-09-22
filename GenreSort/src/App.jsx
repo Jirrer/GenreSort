@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import './App.css';
+import ParticleBackground from "./components/ParticleBackground";
 import NewPlaylists from "./components/newPlaylists";
 import Temp from "./components/Temp";
 
@@ -16,6 +17,7 @@ function App() {
 
       </div>
       <div className="screenContent">
+        <ParticleBackground />
         {active === 'NewPlaylists' && <NewPlaylists/>}
         {active === 'Temp' && <Temp/>}
       </div>
