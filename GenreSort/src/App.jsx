@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { act, useState } from "react";
 import './App.css';
-import ParticleBackground from "./components/ParticleBackground";
 import NewPlaylists from "./components/newPlaylists";
 import Temp from "./components/Temp";
+import HomePage from "./components/HomePage";
 
 function App() {
-  const [active, setActive] = useState('');
+  const [active, setActive] = useState('HomePage');
 
   return (
     <>
@@ -17,7 +17,7 @@ function App() {
 
       </div>
       <div className="screenContent">
-        {/* <ParticleBackground /> */}
+        {active === 'HomePage' && <HomePage />}
         {active === 'NewPlaylists' && <NewPlaylists/>}
         {active === 'Temp' && <Temp/>}
       </div>

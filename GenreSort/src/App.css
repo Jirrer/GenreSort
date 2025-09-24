@@ -30,6 +30,23 @@
     cursor: pointer;
 }
 
+.HomePage {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 89vh;
+}
+
+.HomePage h1, p {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: #cccccc;
+    max-width: 50%;
+    text-align: center;
+}
+
 .newPlaylists {
     font-family: 'Inter', sans-serif;
     display: flex;
@@ -46,6 +63,10 @@
     color: #cccccc;
     max-width: 50%;
     text-align: center;
+}
+
+.SubmissionReport {
+    font-style: italic;
 }
 
 .PlaylistInputBox {

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import ParticleBackground from "./ParticleBackground";
 
 const NewPlaylists = () => {
     const [input, setInput] = useState("");
+    const [SubmissionReport, setReportMessage] = useState('');
 
     const sendPlaylist = async () => {
         try {
@@ -14,8 +14,10 @@ const NewPlaylists = () => {
 
         const data = await res.json();
         setResponse(data.status || JSON.stringify(data)); 
+        setReportMessage("Playlists Successfully Created")
         } catch (err) {
         console.error(err);
+        setReportMessage("Invalid Playlist Link")
         }
     };
 
@@ -24,20 +26,26 @@ const NewPlaylists = () => {
       <h1>New Playlists</h1>
       <p>
       Splits submitted playlist into a few (2 - 5) new playlists based 
-      on genre of the artists.
+      on the genre of the artists.
       </p>
       <input
-        className="PlaylistInputBox"
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Enter Playlist Link"
-      />
+          className="PlaylistInputBox"
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Enter Playlist Link"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              sendPlaylist();
+            }
+          }}
+        />
       <button
         className="PlaylistInputButton"
         onClick={sendPlaylist}>
         Generate New Playlists
       </button>
+      <p className="SubmissionReport">{SubmissionReport}</p>
     </div>
   )
 }
