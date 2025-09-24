@@ -21,6 +21,11 @@ const NewPlaylists = () => {
 
   return (
     <div className='newPlaylists'>
+      <h1>New Playlists</h1>
+      <p>
+      Splits submitted playlist into a few (2 - 5) new playlists based 
+      on genre of the artists.
+      </p>
       <input
         className="PlaylistInputBox"
         type="text"

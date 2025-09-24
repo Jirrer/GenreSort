@@ -17,7 +17,7 @@ function App() {
 
       </div>
       <div className="screenContent">
-        <ParticleBackground />
+        {/* <ParticleBackground /> */}
         {active === 'NewPlaylists' && <NewPlaylists/>}
         {active === 'Temp' && <Temp/>}
       </div>
