@@ -96,5 +96,22 @@
     border-radius: 50px;
     background-color: #404040;
     color: #cccccc;
-    
+}
+
+.devTest {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 89vh;
+    gap: 3px;
+}
+
+.devTest h1, p{
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: #cccccc;
+    max-width: 50%;
+    text-align: center;
 }

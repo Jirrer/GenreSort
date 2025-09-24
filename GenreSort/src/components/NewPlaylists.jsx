@@ -13,11 +13,14 @@ const NewPlaylists = () => {
         });
 
         const data = await res.json();
-        setResponse(data.status || JSON.stringify(data)); 
-        setReportMessage("Playlists Successfully Created")
+        if (data.status == 'success') {
+          setReportMessage("Playlists Successfully Created")
+        } else{
+          setReportMessage("Invalid Playlist Link")
+        }
         } catch (err) {
         console.error(err);
-        setReportMessage("Invalid Playlist Link")
+        setReportMessage(`Eorr - ${err}`)
         }
     };
 

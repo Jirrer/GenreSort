@@ -3,6 +3,7 @@ import './App.css';
 import NewPlaylists from "./components/newPlaylists";
 import Temp from "./components/Temp";
 import HomePage from "./components/HomePage";
+import DevelopmentTest from "./components/DevelopmentTest"
 
 function App() {
   const [active, setActive] = useState('HomePage');
@@ -11,7 +12,7 @@ function App() {
     <>
       <div className="topBar">
         <button onClick={() => setActive('NewPlaylists')}>New Playlists</button>
-        <button onClick={() => setActive('Temp')}>Temp</button>
+        <button onClick={() => setActive('DevelopmentTest')}>Dev Test</button>
         <button onClick={() => setActive('Temp')}>Temp</button>
         <button onClick={() => setActive('Temp')}>Temp</button>
 
@@ -19,6 +20,7 @@ function App() {
       <div className="screenContent">
         {active === 'HomePage' && <HomePage />}
         {active === 'NewPlaylists' && <NewPlaylists/>}
+        {active === 'DevelopmentTest' && <DevelopmentTest />}
         {active === 'Temp' && <Temp/>}
       </div>
     </>

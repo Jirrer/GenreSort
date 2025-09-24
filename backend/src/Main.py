@@ -7,7 +7,7 @@ from ParseUserPlaylist import getUserTracks
 from CreatePlaylists import createPlaylists
 from flask import Flask, request, jsonify
 
-# To-Do: refactor all python code
+# To-Do: change how auth opens browser (requres refactor)
 # To-Do: work on algo to decide playlists
 # To-Do: could make it so it adds to prexisting playlists 
 
@@ -21,13 +21,19 @@ app = Flask(__name__)
 auth_code = None
 auth_event = threading.Event()
 
+@app.route("/pingServer")
+def pingServer():
+    return jsonify({"status": "Invalid Playlist ID"})
+
 @app.route("/passInPlaylist", methods=["POST"])
 def recievePlaylist():
     data = request.json
     playlistID = data.get("message", "")
     print(playlistID)
 
-    if validPlaylistId(playlistID): runPlaylistCreation(playlistID); return jsonify({"status": "success"})
+    if validPlaylistId(playlistID): 
+        # runPlaylistCreation(playlistID)   <------------ creates playlist
+        return jsonify({"status": "success"})
     else: return jsonify({"status": "Invalid Playlist ID"})
 
 @app.route("/callback")
@@ -36,6 +42,7 @@ def callback():
     auth_code = request.args.get("code")
     auth_event.set()
     return "Successfully authenticated\nYou can close this this tab\nYou may need to refresh spotify to see changes"
+    
 
 def validPlaylistId(data):
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
