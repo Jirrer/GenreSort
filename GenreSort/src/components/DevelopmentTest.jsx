@@ -1,21 +1,17 @@
 import React, { useState } from "react";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const DevelopmentTest = () => {
     const [status, setStatus] = useState("");
 
     const sendPing = async () => {
-        try {
-            const response = await fetch('/pingServer');
-            const data = await response.json();
-            setStatus(data.status);
-
-            if (data.status == 'success') {
-                setStatus("Successfully pinged server")
-            }
-        } catch (error) {
-        console.error("Error pinging server:", error);
-        setStatus("Error pinging server");
-        }
+      try {
+        const response = await fetch(`${API_URL}/pingServer`);
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
     };
 
   return (

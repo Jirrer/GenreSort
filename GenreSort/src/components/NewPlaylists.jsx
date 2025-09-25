@@ -6,7 +6,7 @@ const NewPlaylists = () => {
 
     const sendPlaylist = async () => {
         try {
-        const res = await fetch("/passinNewPlaylists", {
+  const res = await fetch(`/passinNewPlaylists`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: input })  

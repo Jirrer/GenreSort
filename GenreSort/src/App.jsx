@@ -1,6 +1,6 @@
 import React, { act, useState } from "react";
 import './App.css';
-import NewPlaylists from "./components/newPlaylists";
+import NewPlaylists from "./components/NewPlaylists";
 import Temp from "./components/Temp";
 import HomePage from "./components/HomePage";
 import DevelopmentTest from "./components/DevelopmentTest"
