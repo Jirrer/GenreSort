@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 
 const DevelopmentTest = () => {
-    const [input, setInput] = useState("");
-    const [ServerResponse, setResponse] = useState('');
+    const [status, setStatus] = useState("");
 
     const sendPing = async () => {
         try {
-        const res = await fetch("/pingServer", {});
+            const response = await fetch('/pingServer');
+            const data = await response.json();
+            setStatus(data.status);
 
-        const data = await res.json();
-        setResponse(data)
-        } catch (err) {
-        console.error(err);
+            if (data.status == 'success') {
+                setStatus("Successfully pinged server")
+            }
+        } catch (error) {
+        console.error("Error pinging server:", error);
+        setStatus("Error pinging server");
         }
     };
 
@@ -23,7 +26,7 @@ const DevelopmentTest = () => {
         onClick={sendPing}>
         ping server
       </button>
-      <p className="SubmissionReport">{ServerResponse}</p>
+      <p className="SubmissionReport">{status}</p>
     </div>
   )
 }

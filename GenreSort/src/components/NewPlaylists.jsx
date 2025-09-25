@@ -6,15 +6,16 @@ const NewPlaylists = () => {
 
     const sendPlaylist = async () => {
         try {
-        const res = await fetch("/passInPlaylist", {
+        const res = await fetch("/passinNewPlaylists", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: input })  
         });
 
         const data = await res.json();
+        
         if (data.status == 'success') {
-          setReportMessage("Playlists Successfully Created")
+          window.open(data.auth_url, "_blank");
         } else{
           setReportMessage("Invalid Playlist Link")
         }

@@ -1,4 +1,4 @@
-import os, spotipy, APICounter, webbrowser, threading
+import os, spotipy, APICounter, uuid, threading
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from spotipy.exceptions import SpotifyException
 from dotenv import load_dotenv
@@ -14,34 +14,54 @@ from flask import Flask, request, jsonify
 load_dotenv()
 
 numberOfPlaylist = 3 # Plus one for misc
-elavatedSpotifyAuth = True
 
 app = Flask(__name__)
 
 auth_code = None
 auth_event = threading.Event()
+temp_playlist_map = {}
 
 @app.route("/pingServer")
 def pingServer():
-    return jsonify({"status": "Invalid Playlist ID"})
+    return jsonify({"status": "success"})
 
-@app.route("/passInPlaylist", methods=["POST"])
-def recievePlaylist():
+@app.route("/passinNewPlaylists", methods=["POST"])
+def passinNewPlaylists():
     data = request.json
     playlistID = data.get("message", "")
-    print(playlistID)
 
-    if validPlaylistId(playlistID): 
-        # runPlaylistCreation(playlistID)   <------------ creates playlist
-        return jsonify({"status": "success"})
+    if validPlaylistId(playlistID):
+        token = str(uuid.uuid4())  # unique temporary token
+        temp_playlist_map[token] = playlistID
+
+        sp_oauth = getElivatedSP()
+        auth_url = sp_oauth.get_authorize_url(state=token)
+
+        print("Waiting for Spotify auth...")
+        return jsonify({"status": "success", "auth_url": auth_url})
+        
     else: return jsonify({"status": "Invalid Playlist ID"})
 
 @app.route("/callback")
 def callback():
-    global auth_code
-    auth_code = request.args.get("code")
-    auth_event.set()
-    return "Successfully authenticated\nYou can close this this tab\nYou may need to refresh spotify to see changes"
+    code = request.args.get("code")
+    state_token = request.args.get("state")
+    playlistID = temp_playlist_map.pop(state_token, None)
+
+
+    if not playlistID:
+        return "No playlist found for this session or token expired."
+
+
+
+    sp_oauth = getElivatedSP()          
+    token = sp_oauth.get_access_token(code, as_dict=False)
+    sp = spotipy.Spotify(auth=token)
+
+    runNewPlaylistsCreation(sp, playlistID)
+
+    return "Successfully authenticated! You can close this tab."
+
     
 
 def validPlaylistId(data):
@@ -56,60 +76,50 @@ def validPlaylistId(data):
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
     try:
-        playlist = sp.playlist(data) # test if I need that variable
+        sp.playlist(data) 
         return True
     
     except SpotifyException as e:
         print(f"Spotify API error: {e}")
         return False
 
-def runPlaylistCreation(userPlaylist):
-    global elavatedSpotifyAuth
-    sp = getSp(True)
+def runNewPlaylistsCreation(sp, playlistID):
+    print("good to go")
 
-    trackIDs = getUserTracks(userPlaylist, sp); print("Pulled Track Ids")
-    trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
-    newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
-    createPlaylists(newPlaylists, sp); print("Created Playlists")
+    # trackIDs = getUserTracks(auth_code, sp); print("Pulled Track Ids")
+    # trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
+    # newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
+    # createPlaylists(newPlaylists, sp); print("Created Playlists")
 
-    print(f"Spotify API Calls: {APICounter.numApiCalls}")
+    # print(f"Spotify API Calls: {APICounter.numApiCalls}")
     
-def getSp(elevatedAuth):
+def getElivatedSP():
+    CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+    CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+    REDIRECT_URI = os.getenv("REDIRECT_URI")
+    SCOPE = "playlist-modify-public playlist-modify-private"
+
+    sp_oauth = SpotifyOAuth(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        redirect_uri=REDIRECT_URI,
+        scope=SCOPE,
+        show_dialog=True
+    )
+
+    return sp_oauth
+
+def getClientSP():
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
-    if (elevatedAuth): # Elevated perms
-        REDIRECT_URI = os.getenv("REDIRECT_URI")
-        SCOPE = "playlist-modify-public playlist-modify-private"
+    auth_manager = SpotifyClientCredentials(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET
+    )
 
-        sp_oauth = SpotifyOAuth(
-            client_id=CLIENT_ID,
-            client_secret=CLIENT_SECRET,
-            redirect_uri=REDIRECT_URI,
-            scope=SCOPE,
-            show_dialog=True
-        )
+    return spotipy.Spotify(auth_manager=auth_manager)
 
-        auth_url = sp_oauth.get_authorize_url() 
-        webbrowser.open(auth_url)
-
-        print("Waiting for Spotify auth...")
-        auth_event.wait()  # blocks here until /callback sets the code
-
-        access_token = sp_oauth.get_access_token(auth_code, as_dict=False)
-        return spotipy.Spotify(auth=access_token)
-
-    else: # Regular perms
-        auth_manager = SpotifyClientCredentials(
-            client_id=CLIENT_ID,
-            client_secret=CLIENT_SECRET
-        )
-
-        return spotipy.Spotify(auth_manager=auth_manager)
-
-    
-
-    
 def generateNewPlaylists(trackDict):
     output = {'misc': []}
     genresCounts = getGenresCounts(trackDict.values())

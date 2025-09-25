@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default ({ mode }) => {
-  // Load env from one directory above
   const env = loadEnv(mode, path.resolve(__dirname, '..'), '')
   const apiUrl = env.VITE_API_URL
 
@@ -13,7 +12,7 @@ export default ({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
-        '/passInPlaylist': {
+        '/passinNewPlaylists': {
           target: apiUrl,
           changeOrigin: true,
           secure: false,
