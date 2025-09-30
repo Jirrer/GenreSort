@@ -84,7 +84,7 @@ def validPlaylistId(data):
         return False
 
 def runNewPlaylistsCreation(sp, playlistID):
-    trackIDs = getUserTracks(auth_code, sp); print("Pulled Track Ids")
+    trackIDs = getUserTracks(playlistID, sp); print("Pulled Track Ids")
     trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
     newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
     createPlaylists(newPlaylists, sp); print("Created Playlists")
