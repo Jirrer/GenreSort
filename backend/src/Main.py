@@ -84,14 +84,12 @@ def validPlaylistId(data):
         return False
 
 def runNewPlaylistsCreation(sp, playlistID):
-    print("good to go")
+    trackIDs = getUserTracks(playlistID, sp); print("Pulled Track Ids")
+    trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
+    newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
+    createPlaylists(newPlaylists, sp); print("Created Playlists")
 
-    # trackIDs = getUserTracks(auth_code, sp); print("Pulled Track Ids")
-    # trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
-    # newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
-    # createPlaylists(newPlaylists, sp); print("Created Playlists")
-
-    # print(f"Spotify API Calls: {APICounter.numApiCalls}")
+    print(f"Spotify API Calls: {APICounter.numApiCalls}")
     
 def getElivatedSP():
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
