@@ -8,21 +8,23 @@ export default ({ mode }) => {
 
   if (!apiUrl) throw new Error("VITE_API_URL is not defined!")
 
-  return defineConfig({
+  return {
     plugins: [react()],
     server: {
-      proxy: {
-        '/passinNewPlaylists': {
-          target: apiUrl,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/pingServer': {
-          target: apiUrl,
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      proxy: mode === "development"
+        ? {
+            "/passinNewPlaylists": {
+              target: apiUrl,
+              changeOrigin: true,
+              secure: false,
+            },
+            "/pingServer": {
+              target: apiUrl,
+              changeOrigin: true,
+              secure: false,
+            },
+          }
+        : undefined,
     },
-  })
+  }
 }
