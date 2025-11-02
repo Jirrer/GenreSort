@@ -5,17 +5,23 @@ from dotenv import load_dotenv
 from PullGenres import getTrackGenres
 from ParseUserPlaylist import getUserTracks
 from CreatePlaylists import createPlaylists
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 
-# To-Do: change how auth opens browser (requres refactor)
-# To-Do: work on algo to decide playlists
-# To-Do: could make it so it adds to prexisting playlists 
+# To-Do: clear playlist in frontend after successful generation
 
 load_dotenv()
 
 numberOfPlaylist = 3 # Plus one for misc
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="dist", static_url_path="/")
+
+@app.route("/")
+@app.route("/<path:path>")
+def serve_react(path=""):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
 
 auth_code = None
 auth_event = threading.Event()
