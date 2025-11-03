@@ -22,3 +22,5 @@ All versions
 |Spotipy| Pull informatin from Spotify Web API
 
 ## How It Works
+
+
