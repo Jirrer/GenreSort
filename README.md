@@ -1,4 +1,8 @@
 ## Definition
+## Installing and Using
+Download the most recent version - 
+All versions
+
 
 
 ## Tech Stack
