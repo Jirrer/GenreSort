@@ -1,7 +1,8 @@
 ## Definition
 ## Installing
-Download the most recent version - 
+Download the most recent version - [Version 1.0](https://github.com/Jirrer/GenreSort/raw/refs/heads/main/genre-sort.tar)\
 All versions
+* [Version 1.0](https://github.com/Jirrer/GenreSort/raw/refs/heads/main/genre-sort.tar)
 
 ## Using Genre Sort
 (windows)
@@ -11,7 +12,7 @@ All versions
     * docker run -p 5000:5000 genre-sort
 * Open Web Browser
     * Go to 'localhost:5000
-
+    
 ## Tech Stack
 | Tech | Use |
 |-|-|
