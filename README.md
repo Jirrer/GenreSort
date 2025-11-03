@@ -8,7 +8,7 @@ All versions
 (windows)
 * Open Terminal
     * cd {location of the downloaded .tar file}
-    * load -i genre-sort.tar
+    * docker load -i genre-sort.tar
     * docker run -p 5000:5000 genre-sort
 * Open Web Browser
     * Go to 'localhost:5000
