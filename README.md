@@ -1,9 +1,16 @@
 ## Definition
-## Installing and Using
+## Installing
 Download the most recent version - 
 All versions
 
-
+## Using Genre Sort
+(windows)
+* Open Terminal
+    * cd {location of the downloaded .tar file}
+    * load -i genre-sort.tar
+    * docker run -p 5000:5000 genre-sort
+* Open Web Browser
+    * Go to 'localhost:5000
 
 ## Tech Stack
 | Tech | Use |
