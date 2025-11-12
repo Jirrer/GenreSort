@@ -1,5 +1,6 @@
 ## Using Genre Sort
 (windows)
+* Ensure Docker is running on your system
 * Open Terminal
     * cd {location of the downloaded .tar file}
     * docker load -i genre-sort.tar
