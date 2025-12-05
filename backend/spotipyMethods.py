@@ -7,27 +7,13 @@ from datetime import datetime
 from spotipy.exceptions import SpotifyException
 
 numberOfPlaylist = 3 # Plus one for misc
+APICounter = 0
 
-def createPlaylists(playlistDict, sp):
-    currDate = datetime.now()
+def getApiCounter(): return APICounter
 
-    for genere, songArray in playlistDict.items():
-        playlistName = f"Sorted by {genere} - {currDate}"
+def clearApiCounter(): global APICounter; APICounter = 0
 
-        playlist = sp.user_playlist_create(
-            user = sp.me()["id"],
-            name = playlistName,
-            public = False,
-            description = ""
-        )
-
-        APICounter.numApiCalls += 2
-
-        for index in range(0, len(songArray), 100):
-            sp.playlist_add_items(playlist["id"], songArray[index:index+100])
-            APICounter.numApiCalls += 1
-
-def validPlaylistId(data):
+def validPlaylistId(potentialId):
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
@@ -39,21 +25,13 @@ def validPlaylistId(data):
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
     try:
-        sp.playlist(data) 
+        sp.playlist(potentialId) 
         return True
     
     except SpotifyException as e:
         print(f"Spotify API error: {e}")
         return False
-
-def runNewPlaylistsCreation(sp, playlistID):
-    trackIDs = getUserTracks(playlistID, sp); print("Pulled Track Ids")
-    trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
-    newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
-    createPlaylists(newPlaylists, sp); print("Created Playlists")
-
-    print(f"Spotify API Calls: {APICounter.numApiCalls}")
-    
+  
 def getElivatedSP():
     CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -81,37 +59,57 @@ def getClientSP():
 
     return spotipy.Spotify(auth_manager=auth_manager)
 
-def generateNewPlaylists(trackDict):
-    output = {'misc': []}
-    genresCounts = getGenresCounts(trackDict.values())
-    sortedGenreCount = sorted(genresCounts.items(), key=lambda item: item[1], reverse=True)
+def getPlaylistTrackIds(playlistID, sp):
+    track_ids = set()
+    
+    try:
+        results = sp.playlist_items(playlistID, additional_types=['track'])
 
-    global numberOfPlaylist
-    allowedGenres = sortedGenreCount[:numberOfPlaylist]
+        global APICounter
+        APICounter += 1
 
-    for genre in allowedGenres: output[genre[0]] = []
+    except SpotifyException as e:
+        if e.http_status == 429:
+            wait_time = int(e.headers.get("Retry-After", 5))
+            print(f"Rate limited! Waiting {wait_time}s...")
+            time.sleep(wait_time)
+            results = sp.playlist_items(playlistID, additional_types=['track'])
 
-    for track, genresStr in trackDict.items():
-        if not genresStr: output['misc'].append(track); continue
+            global APICounter
+            APICounter += 1
+        else:
+            raise
 
-        songGenres = genresStr.split(',')
+    for item in results['items']:
+        if item['track'] and item['track']['id']:
+            track_ids.add(item['track']['id'])
 
-        for genreName in reversed(allowedGenres):
-            if genreName[0] in songGenres: output[genreName[0]].append(track); break
+    while results['next']:
+        try:
+            results = sp.next(results)
+            
+            global APICounter
+            APICounter += 1
 
-    return output
+        except SpotifyException as e:
+            if e.http_status == 429:
+                wait_time = int(e.headers.get("Retry-After", 5))
+                print(f"Rate limited! Waiting {wait_time}s...")
+                time.sleep(wait_time)
+                
+                global APICounter
+                APICounter += 1
+                continue
+    
+            else:
+                raise
 
-def getGenresCounts(genreStr):
-    output = {}
+        for item in results['items']:
+            if item['track'] and item['track']['id']:
+                track_ids.add(item['track']['id'])
 
-    for genreList in genreStr:
-        for genre in genreList.split(','):
-            if not genre: continue
+    return list(track_ids)
 
-            if genre in output: output[genre] += 1
-            else: output[genre] = 1
-
-    return output
 
 def getTrackGenres(trackstrs, sp):
     trackIDs = getTrackIDs(trackstrs, sp)
@@ -140,7 +138,9 @@ def getTrackIDs(strs, sp):
     output = []
     for batch in chunks(strs, 50):
         info = sp.tracks(batch)["tracks"]
-        APICounter.numApiCalls += 1
+
+        global APICounter
+        APICounter += 1
         output.extend(info)
 
     return output
@@ -161,7 +161,9 @@ def chunks(lst, n):
 def safe_artists_fetch(sp, artist_ids):
     while True:
         try:
-            APICounter.numApiCalls += 1
+            global APICounter
+            APICounter += 1
+
             return sp.artists(artist_ids)["artists"]
         
         except SpotifyException as e:
@@ -174,48 +176,22 @@ def safe_artists_fetch(sp, artist_ids):
                 raise
 
 
+def createPlaylists(playlistDict, sp):
+    currDate = datetime.now()
 
+    for genere, songArray in playlistDict.items():
+        playlistName = f"Sorted by {genere} - {currDate}"
 
-def getUserTracks(playlistID, sp):
-    track_ids = set()
-    
-    try:
-        results = sp.playlist_items(playlistID, additional_types=['track'])
-        APICounter.numApiCalls += 1
+        playlist = sp.user_playlist_create(
+            user = sp.me()["id"],
+            name = playlistName,
+            public = False,
+            description = ""
+        )
 
-    except SpotifyException as e:
-        if e.http_status == 429:
-            wait_time = int(e.headers.get("Retry-After", 5))
-            print(f"Rate limited! Waiting {wait_time}s...")
-            time.sleep(wait_time)
-            results = sp.playlist_items(playlistID, additional_types=['track'])
-            APICounter.numApiCalls += 1
+        global APICounter
+        APICounter += 2
 
-        else:
-            raise
-
-    for item in results['items']:
-        if item['track'] and item['track']['id']:
-            track_ids.add(item['track']['id'])
-
-    while results['next']:
-        try:
-            results = sp.next(results)
-            APICounter.numApiCalls += 1
-
-        except SpotifyException as e:
-            if e.http_status == 429:
-                wait_time = int(e.headers.get("Retry-After", 5))
-                print(f"Rate limited! Waiting {wait_time}s...")
-                time.sleep(wait_time)
-                APICounter.numApiCalls += 1
-                continue
-    
-            else:
-                raise
-
-        for item in results['items']:
-            if item['track'] and item['track']['id']:
-                track_ids.add(item['track']['id'])
-
-    return list(track_ids)
+        for index in range(0, len(songArray), 100):
+            sp.playlist_add_items(playlist["id"], songArray[index:index+100])
+            APICounter += 1

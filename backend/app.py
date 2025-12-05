@@ -1,7 +1,8 @@
 import os, spotipy, uuid, threading
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_from_directory
-from spotipyMethods import getElivatedSP, validPlaylistId, runNewPlaylistsCreation
+from spotipyMethods import getElivatedSP, validPlaylistId
+from CREATE_RECOMMENDED_PLAYLISTS import startCreate_Recommended_Playlists
 
 load_dotenv()
 
@@ -25,8 +26,8 @@ temp_playlist_map = {}
 def pingServer():
     return jsonify({"status": "success"})
 
-@app.route("/passinNewPlaylists", methods=["POST"])
-def passinNewPlaylists():
+@app.route("/passinNewPlaylists", methods=["POST"]) #change name
+def runCreate_Recommended_Playlists():
     data = request.json
     playlistID = data.get("message", "")
 
@@ -56,7 +57,7 @@ def callback():
     token = sp_oauth.get_access_token(code, as_dict=False)
     sp = spotipy.Spotify(auth=token)
 
-    runNewPlaylistsCreation(sp, playlistID)
+    startCreate_Recommended_Playlists(sp, playlistID)
 
     return "Successfully authenticated! You can close this tab."
 
