@@ -1,13 +1,8 @@
-import os, spotipy, APICounter, uuid, threading
-from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
-from spotipy.exceptions import SpotifyException
+import os, spotipy, uuid, threading
 from dotenv import load_dotenv
-from PullGenres import getTrackGenres
-from ParseUserPlaylist import getUserTracks
-from CreatePlaylists import createPlaylists
 from flask import Flask, request, jsonify, send_from_directory
-
-# To-Do: clear playlist in frontend after successful generation
+from spotipyMethods import getElivatedSP, validPlaylistId
+from CREATE_RECOMMENDED_PLAYLISTS import startCreate_Recommended_Playlists
 
 load_dotenv()
 
@@ -31,8 +26,8 @@ temp_playlist_map = {}
 def pingServer():
     return jsonify({"status": "success"})
 
-@app.route("/passinNewPlaylists", methods=["POST"])
-def passinNewPlaylists():
+@app.route("/passinNewPlaylists", methods=["POST"]) #change name
+def runCreate_Recommended_Playlists():
     data = request.json
     playlistID = data.get("message", "")
 
@@ -58,103 +53,14 @@ def callback():
     if not playlistID:
         return "No playlist found for this session or token expired."
 
-
-
     sp_oauth = getElivatedSP()          
     token = sp_oauth.get_access_token(code, as_dict=False)
     sp = spotipy.Spotify(auth=token)
 
-    runNewPlaylistsCreation(sp, playlistID)
+    startCreate_Recommended_Playlists(sp, playlistID)
 
     return "Successfully authenticated! You can close this tab."
 
-    
-
-def validPlaylistId(data):
-    CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-    CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-
-    auth_manager = SpotifyClientCredentials(
-            client_id=CLIENT_ID,
-            client_secret=CLIENT_SECRET
-        )
-
-    sp = spotipy.Spotify(auth_manager=auth_manager)
-
-    try:
-        sp.playlist(data) 
-        return True
-    
-    except SpotifyException as e:
-        print(f"Spotify API error: {e}")
-        return False
-
-def runNewPlaylistsCreation(sp, playlistID):
-    trackIDs = getUserTracks(playlistID, sp); print("Pulled Track Ids")
-    trackGenres = getTrackGenres(trackIDs, sp); print("Pulled Genres")
-    newPlaylists = generateNewPlaylists(trackGenres); print("Generated Playlists")
-    createPlaylists(newPlaylists, sp); print("Created Playlists")
-
-    print(f"Spotify API Calls: {APICounter.numApiCalls}")
-    
-def getElivatedSP():
-    CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-    CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-    REDIRECT_URI = os.getenv("REDIRECT_URI")
-    SCOPE = "playlist-modify-public playlist-modify-private"
-
-    sp_oauth = SpotifyOAuth(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        redirect_uri=REDIRECT_URI,
-        scope=SCOPE,
-        show_dialog=True
-    )
-
-    return sp_oauth
-
-def getClientSP():
-    CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-    CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-
-    auth_manager = SpotifyClientCredentials(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET
-    )
-
-    return spotipy.Spotify(auth_manager=auth_manager)
-
-def generateNewPlaylists(trackDict):
-    output = {'misc': []}
-    genresCounts = getGenresCounts(trackDict.values())
-    sortedGenreCount = sorted(genresCounts.items(), key=lambda item: item[1], reverse=True)
-
-    global numberOfPlaylist
-    allowedGenres = sortedGenreCount[:numberOfPlaylist]
-
-    for genre in allowedGenres: output[genre[0]] = []
-
-    for track, genresStr in trackDict.items():
-        if not genresStr: output['misc'].append(track); continue
-
-        songGenres = genresStr.split(',')
-
-        for genreName in reversed(allowedGenres):
-            if genreName[0] in songGenres: output[genreName[0]].append(track); break
-
-    return output
-
-def getGenresCounts(genreStr):
-    output = {}
-
-    for genreList in genreStr:
-        for genre in genreList.split(','):
-            if not genre: continue
-
-            if genre in output: output[genre] += 1
-            else: output[genre] = 1
-
-    return output
 
 if __name__ == "__main__": 
     app.run(debug=True)
